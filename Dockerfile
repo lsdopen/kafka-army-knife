@@ -8,11 +8,12 @@ ADD https://packages.confluent.io/archive/5.5/confluent-community-5.5.4-2.12.tar
 RUN cd /tmp/confluent-community && \
     tar -xzvf confluent-community-5.5.4-2.12.tar.gz --directory /usr/share/ && \
     rm -rf /tmp/confluent-community/
-ENV PATH="/usr/share/confluent-5.5.4/bin:${PATH}"
+ENV PATH="${PATH}:/usr/share/confluent-5.5.4/bin"
 
 # sqlline
 ADD https://repo1.maven.org/maven2/sqlline/sqlline/1.9.0/sqlline-1.9.0-jar-with-dependencies.jar /usr/share/sqlline/
-ADD sqlline /usr/bin/sqlline
+ADD sqlline /usr/share/sqlline/
+ENV PATH="${PATH}:/usr/share/sqlline"
 
 # Oracle driver
 ADD https://download.oracle.com/otn-pub/otn_software/jdbc/1911/ojdbc8.jar /usr/share/sqlline/
@@ -30,3 +31,6 @@ RUN cd /tmp/sqljdbc && \
     tar -xzvf sqljdbc_9.2.1.0_enu.tar.gz && \
     cp sqljdbc_9.2/enu/mssql-jdbc-9.2.1.jre11.jar /usr/share/sqlline/ && \
     rm -rf /tmp/sqljdbc
+
+# add PATH to .profile for ssh logins
+RUN echo "PATH=${PATH}" >> /root/.profile
