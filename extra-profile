@@ -1,0 +1,5 @@
+export PATH=$PATH:/usr/share/confluent-5.5.4/bin:/usr/share/sqlline
+
+if [ -f ~/.kafka-env ]; then
+    . ~/.kafka-env
+fi

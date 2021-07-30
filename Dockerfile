@@ -32,5 +32,7 @@ RUN cd /tmp/sqljdbc && \
     cp sqljdbc_9.2/enu/mssql-jdbc-9.2.1.jre11.jar /usr/share/sqlline/ && \
     rm -rf /tmp/sqljdbc
 
-# add PATH to .profile for ssh logins
-RUN echo "PATH=${PATH}" >> /root/.profile
+# add extra profile to .profile for ssh logins
+ADD extra-profile /tmp/
+RUN cat /tmp/extra-profile >> /root/.profile && \
+    rm /tmp/extra-profile
