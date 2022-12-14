@@ -19,7 +19,8 @@ ENV PATH="${PATH}:/usr/share/sqlline"
 ADD https://download.oracle.com/otn-pub/otn_software/jdbc/1911/ojdbc8.jar /usr/share/sqlline/
 
 # IBM DB2 JTOpen driver
-ADD https://tenet.dl.sourceforge.net/project/jt400/JTOpen-full/10.6/jtopen_10_6.zip /tmp/jt400/
+# ADD https://tenet.dl.sourceforge.net/project/jt400/JTOpen-full/10.6/jtopen_10_6.zip /tmp/jt400/
+COPY ./drivers/jtopen_10_6.zip /tmp/jt400/
 RUN cd /tmp/jt400 && \
     unzip jtopen_10_6.zip && \
     cp lib/java9/jt400.jar /usr/share/sqlline/ && \
