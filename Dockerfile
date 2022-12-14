@@ -4,11 +4,11 @@ RUN apt-get update
 RUN apt-get install unzip -y
 
 # Confluent Community tooling
-ADD https://packages.confluent.io/archive/5.5/confluent-community-5.5.4-2.12.tar.gz?_ga=2.40942114.143134930.1627393721-574403922.1620026579 /tmp/confluent-community/
+ADD https://packages.confluent.io/archive/7.3/confluent-community-7.3.0.tar.gz /tmp/confluent-community/
 RUN cd /tmp/confluent-community && \
-    tar -xzvf confluent-community-5.5.4-2.12.tar.gz --directory /usr/share/ && \
+    tar -xzvf confluent-community-7.3.0.tar.gz --directory /usr/share/ && \
     rm -rf /tmp/confluent-community/
-ENV PATH="${PATH}:/usr/share/confluent-5.5.4/bin"
+ENV PATH="${PATH}:/usr/share/confluent-7.3.0/bin"
 
 # sqlline
 ADD https://repo1.maven.org/maven2/sqlline/sqlline/1.9.0/sqlline-1.9.0-jar-with-dependencies.jar /usr/share/sqlline/
