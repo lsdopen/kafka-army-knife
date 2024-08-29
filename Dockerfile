@@ -1,14 +1,22 @@
 FROM lsdopen/swiss-army-knife:latest
 
 RUN apt-get update
-RUN apt-get install unzip -y
+RUN apt-get install openjdk-11-jre curl gnupg unzip -y
 
 # Confluent Community tooling
-ADD https://packages.confluent.io/archive/7.3/confluent-community-7.3.0.tar.gz /tmp/confluent-community/
+ADD https://packages.confluent.io/archive/7.7/confluent-community-7.7.0.tar.gz /tmp/confluent-community/
 RUN cd /tmp/confluent-community && \
-    tar -xzvf confluent-community-7.3.0.tar.gz --directory /usr/share/ && \
+    tar -xzvf confluent-community-7.7.0.tar.gz --directory /usr/share/ && \
     rm -rf /tmp/confluent-community/
-ENV PATH="${PATH}:/usr/share/confluent-7.3.0/bin"
+ENV PATH="${PATH}:/usr/share/confluent-7.7.0/bin"
+
+# Confluent CLI
+RUN mkdir -p /etc/apt/keyrings && \
+    curl https://packages.confluent.io/confluent-cli/deb/archive.key | gpg --dearmor -o /etc/apt/keyrings/confluent-cli.gpg && \
+    chmod go+r /etc/apt/keyrings/confluent-cli.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/confluent-cli.gpg] https://packages.confluent.io/confluent-cli/deb stable main" | tee /etc/apt/sources.list.d/confluent-cli.list >/dev/null && \
+    apt update && \
+    apt install confluent-cli
 
 # sqlline
 ADD https://repo1.maven.org/maven2/sqlline/sqlline/1.9.0/sqlline-1.9.0-jar-with-dependencies.jar /usr/share/sqlline/
