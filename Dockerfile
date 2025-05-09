@@ -4,11 +4,11 @@ RUN apt-get update
 RUN apt-get install openjdk-11-jre curl gnupg unzip -y
 
 # Confluent Community tooling
-ADD https://packages.confluent.io/archive/7.7/confluent-community-7.7.0.tar.gz /tmp/confluent-community/
+ADD https://packages.confluent.io/archive/7.9/confluent-7.9.0.tar.gz /tmp/confluent-community/
 RUN cd /tmp/confluent-community && \
-    tar -xzvf confluent-community-7.7.0.tar.gz --directory /usr/share/ && \
+    tar -xzvf confluent-7.9.0.tar.gz --directory /usr/share/ && \
     rm -rf /tmp/confluent-community/
-ENV PATH="${PATH}:/usr/share/confluent-7.7.0/bin"
+ENV PATH="${PATH}:/usr/share/confluent-7.9.0/bin"
 
 # Confluent CLI
 RUN mkdir -p /etc/apt/keyrings && \
