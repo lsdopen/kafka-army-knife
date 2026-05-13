@@ -1,14 +1,8 @@
 FROM lsdopen/swiss-army-knife:latest
 
 RUN apt-get update
-RUN apt-get install openjdk-11-jre curl gnupg unzip -y
-
-# Confluent Community tooling
-ADD https://packages.confluent.io/archive/7.9/confluent-7.9.0.tar.gz /tmp/confluent-community/
-RUN cd /tmp/confluent-community && \
-    tar -xzvf confluent-7.9.0.tar.gz --directory /usr/share/ && \
-    rm -rf /tmp/confluent-community/
-ENV PATH="${PATH}:/usr/share/confluent-7.9.0/bin"
+RUN apt-get install openjdk-17-jre curl gnupg unzip python3-pip sudo -y
+RUN pip install pyiceberg["s3fs,hive,rest,pyarrow"]
 
 # Confluent CLI
 RUN mkdir -p /etc/apt/keyrings && \
@@ -18,30 +12,36 @@ RUN mkdir -p /etc/apt/keyrings && \
     apt update && \
     apt install confluent-cli
 
-# sqlline
-ADD https://repo1.maven.org/maven2/sqlline/sqlline/1.9.0/sqlline-1.9.0-jar-with-dependencies.jar /usr/share/sqlline/
-ADD sqlline /usr/share/sqlline/
-ENV PATH="${PATH}:/usr/share/sqlline"
+# Add user and include in sudoers
+RUN useradd -d /home/kafka -m kafka -s /bin/bash -c "Kafka User"
+RUN usermod -aG sudo kafka
+RUN echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Oracle driver
-ADD https://download.oracle.com/otn-pub/otn_software/jdbc/1911/ojdbc8.jar /usr/share/sqlline/
+# Change to user kafka
+USER kafka
 
-# IBM DB2 JTOpen driver
-# ADD https://tenet.dl.sourceforge.net/project/jt400/JTOpen-full/10.6/jtopen_10_6.zip /tmp/jt400/
-COPY ./drivers/jtopen_10_6.zip /tmp/jt400/
-RUN cd /tmp/jt400 && \
-    unzip jtopen_10_6.zip && \
-    cp lib/java9/jt400.jar /usr/share/sqlline/ && \
-    rm -rf /tmp/jt400
+# Create .local dirs
+RUN mkdir -p /home/kafka/.local/bin
+RUN mkdir -p /home/kafka/.local/share
 
-# MSSQL driver
-ADD https://download.microsoft.com/download/4/c/3/4c31fbc1-62cc-4a0b-932a-b38ca31cd410/sqljdbc_9.2.1.0_enu.tar.gz /tmp/sqljdbc/
-RUN cd /tmp/sqljdbc && \
-    tar -xzvf sqljdbc_9.2.1.0_enu.tar.gz && \
-    cp sqljdbc_9.2/enu/mssql-jdbc-9.2.1.jre11.jar /usr/share/sqlline/ && \
-    rm -rf /tmp/sqljdbc
+# Confluent tooling
+RUN wget https://packages.confluent.io/archive/7.9/confluent-7.9.0.tar.gz -O /tmp/confluent-7.9.0.tar.gz
+RUN tar -xzvf /tmp/confluent-7.9.0.tar.gz -C /home/kafka/.local/share/ && rm -rf /tmp/confluent*
+RUN ln -s /home/kafka/.local/share/confluent-7.9.0 /home/kafka/.local/share/confluent
+ENV PATH="${PATH}:/home/kafka/.local/share/confluent/bin:/home/kafka/.local/bin"
 
-# add extra profile to .profile for ssh logins
-ADD extra-profile /tmp/
-RUN cat /tmp/extra-profile >> /root/.profile && \
-    rm /tmp/extra-profile
+# Minio tooling
+ARG TARGETARCH
+RUN if [ "${TARGETARCH}" = "amd64" ]; then wget https://dl.min.io/client/mc/release/linux-amd64/mc -O /home/kafka/.local/bin/mc; fi
+RUN if [ "${TARGETARCH}" = "arm64" ]; then wget https://dl.min.io/client/mc/release/linux-arm64/mc -O /home/kafka/.local/bin/mc; fi
+RUN chmod a+x /home/kafka/.local/bin/mc
+
+# Spark SQL
+RUN wget https://dlcdn.apache.org/spark/spark-3.5.6/spark-3.5.6-bin-hadoop3.tgz -O /tmp/spark-3.5.6-bin-hadoop3.tgz
+RUN tar -xzvf /tmp/spark-3.5.6-bin-hadoop3.tgz -C /home/kafka/.local/share/ && rm -rf /tmp/spark*
+RUN ln -s /home/kafka/.local/share/spark-3.5.6-bin-hadoop3 /home/kafka/.local/share/spark
+RUN wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar \
+    -O /home/kafka/.local/share/spark/jars/hadoop-aws-3.3.4.jar
+RUN wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.648/aws-java-sdk-bundle-1.12.648.jar \
+    -O /home/kafka/.local/share/spark/jars/aws-java-sdk-bundle-1.12.648.jar
+ENV PATH="${PATH}:/home/kafka/.local/share/spark/bin"

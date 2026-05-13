@@ -1,0 +1,43 @@
+FROM lsdopen/swiss-army-knife:latest
+
+RUN apt-get update && apt-get install -y --fix-missing openjdk-17-jre curl gnupg unzip python3-pip sudo
+RUN pip install pyiceberg["s3fs,hive,rest,pyarrow"]
+
+# Confluent CLI
+RUN mkdir -p /etc/apt/keyrings && \
+    curl https://packages.confluent.io/confluent-cli/deb/archive.key | gpg --dearmor -o /etc/apt/keyrings/confluent-cli.gpg && \
+    chmod go+r /etc/apt/keyrings/confluent-cli.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/confluent-cli.gpg] https://packages.confluent.io/confluent-cli/deb stable main" | tee /etc/apt/sources.list.d/confluent-cli.list >/dev/null && \
+    apt update && \
+    apt install confluent-cli
+
+# Confluent tooling
+RUN wget https://packages.confluent.io/archive/7.6/confluent-7.6.6.tar.gz -O /tmp/confluent-7.6.6.tar.gz
+RUN tar -xzvf /tmp/confluent-7.6.6.tar.gz -C /opt/ && rm -rf /tmp/confluent*
+RUN ln -s /opt/confluent-7.6.6 /opt/confluent
+ENV PATH="${PATH}:/opt/confluent/bin"
+
+# Spark SQL
+RUN wget https://dlcdn.apache.org/spark/spark-3.5.6/spark-3.5.6-bin-hadoop3.tgz -O /tmp/spark-3.5.6-bin-hadoop3.tgz
+RUN tar -xzvf /tmp/spark-3.5.6-bin-hadoop3.tgz -C /opt/ && rm -rf /tmp/spark*
+RUN ln -s /opt/spark-3.5.6-bin-hadoop3 /opt/spark
+RUN wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar \
+    -O /opt/spark/jars/hadoop-aws-3.3.4.jar
+RUN wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.648/aws-java-sdk-bundle-1.12.648.jar \
+    -O /opt/spark/jars/aws-java-sdk-bundle-1.12.648.jar
+ENV PATH="${PATH}:/opt/spark/bin"
+
+# Minio tooling
+ARG TARGETARCH
+RUN if [ "${TARGETARCH}" = "amd64" ]; then wget https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/local/bin/mc; fi
+RUN if [ "${TARGETARCH}" = "arm64" ]; then wget https://dl.min.io/client/mc/release/linux-arm64/mc -O /usr/local/bin/mc; fi
+RUN chmod a+x /usr/local/bin/mc
+
+# Add aliases to all users profile
+COPY 00-aliases.sh /tmp/00-aliases.sh
+RUN cat /tmp/00-aliases.sh >> /etc/bash.bashrc && rm /tmp/00-aliases.sh
+
+# Add Kafka user and include in sudoers
+RUN useradd -d /home/kafka -m kafka -s /bin/bash -c "Kafka User"
+RUN usermod -aG sudo kafka
+RUN echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
