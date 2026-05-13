@@ -33,6 +33,14 @@ RUN if [ "${TARGETARCH}" = "amd64" ]; then wget https://dl.min.io/client/mc/rele
 RUN if [ "${TARGETARCH}" = "arm64" ]; then wget https://dl.min.io/client/mc/release/linux-arm64/mc -O /usr/local/bin/mc; fi
 RUN chmod a+x /usr/local/bin/mc
 
+# sqlline
+ADD https://repo1.maven.org/maven2/sqlline/sqlline/1.9.0/sqlline-1.9.0-jar-with-dependencies.jar /usr/share/sqlline/
+ADD sqlline /usr/share/sqlline/
+ENV PATH="${PATH}:/usr/share/sqlline"
+
+# Oracle driver
+ADD https://download.oracle.com/otn-pub/otn_software/jdbc/1911/ojdbc8.jar /usr/share/sqlline/
+
 # Add aliases to all users profile
 COPY 00-aliases.sh /tmp/00-aliases.sh
 RUN cat /tmp/00-aliases.sh >> /etc/bash.bashrc && rm /tmp/00-aliases.sh
