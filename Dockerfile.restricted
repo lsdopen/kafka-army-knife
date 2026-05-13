@@ -12,9 +12,9 @@ RUN mkdir -p /etc/apt/keyrings && \
     apt install confluent-cli
 
 # Confluent tooling
-RUN wget https://packages.confluent.io/archive/7.6/confluent-7.6.6.tar.gz -O /tmp/confluent-7.6.6.tar.gz
-RUN tar -xzvf /tmp/confluent-7.6.6.tar.gz -C /opt/ && rm -rf /tmp/confluent*
-RUN ln -s /opt/confluent-7.6.6 /opt/confluent
+RUN wget https://packages.confluent.io/archive/8.0/confluent-8.0.4.tar.gz -O /tmp/confluent-8.0.4.tar.gz
+RUN tar -xzvf /tmp/confluent-8.0.4.tar.gz -C /opt/ && rm -rf /tmp/confluent*
+RUN ln -s /opt/confluent-8.0.4 /opt/confluent
 ENV PATH="${PATH}:/opt/confluent/bin"
 
 # Spark SQL
@@ -34,12 +34,16 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then wget https://dl.min.io/client/mc/rele
 RUN chmod a+x /usr/local/bin/mc
 
 # sqlline
-ADD https://repo1.maven.org/maven2/sqlline/sqlline/1.9.0/sqlline-1.9.0-jar-with-dependencies.jar /usr/share/sqlline/
-ADD sqlline /usr/share/sqlline/
-ENV PATH="${PATH}:/usr/share/sqlline"
+ADD https://repo1.maven.org/maven2/sqlline/sqlline/1.12.0/sqlline-1.12.0-jar-with-dependencies.jar /opt/sqlline-1.12.0/
+ADD sqlline /opt/sqlline-1.12.0/
+RUN ln -s /opt/sqlline-1.12.0 /opt/sqlline
+ENV PATH="${PATH}:/opt/sqlline"
 
 # Oracle driver
-ADD https://download.oracle.com/otn-pub/otn_software/jdbc/1911/ojdbc8.jar /usr/share/sqlline/
+ADD https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc11/21.12.0.0/ojdbc11-21.12.0.0.jar /opt/sqlline-1.12.0/
+ADD https://repo1.maven.org/maven2/com/oracle/database/security/osdt_cert/21.12.0.0/osdt_cert-21.12.0.0.jar /opt/sqlline-1.12.0/
+ADD https://repo1.maven.org/maven2/com/oracle/database/security/osdt_core/21.12.0.0/osdt_core-21.12.0.0.jar /opt/sqlline-1.12.0/
+ADD https://repo1.maven.org/maven2/com/oracle/database/security/oraclepki/21.12.0.0/oraclepki-21.12.0.0.jar /opt/sqlline-1.12.0/
 
 # Add aliases to all users profile
 COPY 00-aliases.sh /tmp/00-aliases.sh
