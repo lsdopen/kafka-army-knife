@@ -2,4 +2,4 @@
 # sqlline - Script to launch SQL shell on Unix, Linux or Mac OS
 
 BINPATH="/opt/sqlline"
-exec java "$EXTRA_JAVA_ARGS" -Doracle.jdbc.timezoneAsRegion=false -cp "$BINPATH/*" sqlline.SqlLine "$@"
+exec java $EXTRA_JAVA_ARGS -Doracle.jdbc.timezoneAsRegion=false -cp "$BINPATH/*" sqlline.SqlLine "$@"
