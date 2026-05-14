@@ -18,14 +18,14 @@ RUN ln -s /opt/confluent-8.0.4 /opt/confluent
 ENV PATH="${PATH}:/opt/confluent/bin"
 
 # Spark SQL
-RUN wget https://dlcdn.apache.org/spark/spark-3.5.6/spark-3.5.6-bin-hadoop3.tgz -O /tmp/spark-3.5.6-bin-hadoop3.tgz
-RUN tar -xzvf /tmp/spark-3.5.6-bin-hadoop3.tgz -C /opt/ && rm -rf /tmp/spark*
-RUN ln -s /opt/spark-3.5.6-bin-hadoop3 /opt/spark
-RUN wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar \
-    -O /opt/spark/jars/hadoop-aws-3.3.4.jar
-RUN wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.648/aws-java-sdk-bundle-1.12.648.jar \
-    -O /opt/spark/jars/aws-java-sdk-bundle-1.12.648.jar
-ENV PATH="${PATH}:/opt/spark/bin"
+# RUN wget https://dlcdn.apache.org/spark/spark-3.5.8/spark-3.5.8-bin-hadoop3.tgz -O /tmp/spark-3.5.8-bin-hadoop3.tgz
+# RUN tar -xzvf /tmp/spark-3.5.8-bin-hadoop3.tgz -C /opt/ && rm -rf /tmp/spark*
+# RUN ln -s /opt/spark-3.5.8-bin-hadoop3 /opt/spark
+# RUN wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar \
+#     -O /opt/spark/jars/hadoop-aws-3.3.4.jar
+# RUN wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.648/aws-java-sdk-bundle-1.12.648.jar \
+#     -O /opt/spark/jars/aws-java-sdk-bundle-1.12.648.jar
+# ENV PATH="${PATH}:/opt/spark/bin"
 
 # Minio tooling
 ARG TARGETARCH
